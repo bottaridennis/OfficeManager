@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "tecnico", "utente"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "mustChangePassword": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "status", "createdAt"]
+    },
+    "Device": {
+      "title": "Device",
+      "description": "Hardware device in the inventory",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "dynamicFields": { "type": "object" },
+        "assignedToUserId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "addedBy": { "type": "string" }
+      },
+      "required": ["category", "serialNumber", "createdAt", "updatedAt", "addedBy"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Support or hardware request",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["support", "request"] },
+        "description": { "type": "string" },
+        "deviceId": { "type": "string" },
+        "userId": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "assignedTo": { "type": "string" }
+      },
+      "required": ["type", "description", "userId", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles and roles"
+    },
+    "/devices/{deviceId}": {
+      "schema": { "$ref": "#/entities/Device" },
+      "description": "Stores inventory devices"
+    },
+    "/tickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/Ticket" },
+      "description": "Stores user requests and tickets"
+    }
+  }
+}

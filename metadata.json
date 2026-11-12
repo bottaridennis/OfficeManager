@@ -1,0 +1,6 @@
+{
+  "name": "Gestione Magazzino (Office Manager)",
+  "description": "Applicazione per la gestione dell'inventario hardware con supporto per codici a barre, richieste di assistenza e ruoli utente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

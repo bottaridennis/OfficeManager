@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+firebase-applet.json
+
+# Config Firebase locale (usare le variabili VITE_FIREBASE_* / GitHub Secrets)
+firebase-applet-config.json
+vite.preview.config.mjs
+_consegna/

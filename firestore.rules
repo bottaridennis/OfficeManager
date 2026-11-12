@@ -1,0 +1,131 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    
+    // Auth token check for bootstrap admin
+    function isBootstrapAdmin() {
+      return request.auth != null && (
+        request.auth.uid == 'qyanLlPBWAexTWYLkLeS6Py1eN93' ||
+        ('email' in request.auth.token && request.auth.token.email == 'dennisbottari@gmail.com')
+      );
+    }
+
+    function hasRole(role) {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == role && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'approved';
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin() || hasRole('admin');
+    }
+
+    function isTecnico() {
+      return hasRole('tecnico');
+    }
+
+    function isApprovedUser() {
+      return isAdmin() || isTecnico() || hasRole('utente');
+    }
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isTecnico() || isApprovedUser());
+      allow list: if isSignedIn() && (isAdmin() || isTecnico() || isApprovedUser());
+      
+      allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isBootstrapAdmin());
+      
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        isBootstrapAdmin() || 
+        (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['firstName', 'lastName', 'mustChangePassword', 'photoUrl']))
+      );
+
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // ==========================================
+    // DEVICES COLLECTION
+    // ==========================================
+    match /devices/{deviceId} {
+      allow get, list: if isSignedIn() && isApprovedUser();
+      allow create, update: if isSignedIn() && (isAdmin() || isTecnico());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // ==========================================
+    // CONSUMABLES COLLECTION
+    // ==========================================
+    match /consumables/{consumableId} {
+      allow get, list: if isSignedIn() && isApprovedUser();
+      allow create, update: if isSignedIn() && (isAdmin() || isTecnico());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // ==========================================
+    // LICENSES COLLECTION
+    // ==========================================
+    match /licenses/{licenseId} {
+      allow get, list: if isSignedIn() && (isAdmin() || isTecnico());
+      allow create, update: if isSignedIn() && (isAdmin() || isTecnico());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // ==========================================
+    // LOANS COLLECTION
+    // ==========================================
+    match /loans/{loanId} {
+      allow get: if isSignedIn() && (isAdmin() || isTecnico() || resource.data.get('userId', '') == request.auth.uid);
+      allow list: if isSignedIn() && (isAdmin() || isTecnico() || resource.data.get('userId', '') == request.auth.uid);
+      allow create, update: if isSignedIn() && (isAdmin() || isTecnico());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // ==========================================
+    // PUBLIC LOOKUP (for Name-based Login)
+    // ==========================================
+    match /public_lookup/{nameId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // ==========================================
+    // LOGS COLLECTION
+    // ==========================================
+    match /logs/{logId} {
+      allow get, list, delete: if isSignedIn() && (isAdmin() || isTecnico());
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // TICKETS COLLECTION
+    // ==========================================
+    match /tickets/{ticketId} {
+      allow get: if isSignedIn() && (isAdmin() || isTecnico() || resource.data.get('userId', '') == request.auth.uid);
+      allow list: if isSignedIn() && (isAdmin() || isTecnico() || resource.data.get('userId', '') == request.auth.uid);
+      
+      allow create: if isSignedIn() && (isAdmin() || isTecnico() || isApprovedUser());
+      
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        isTecnico() || 
+        (resource.data.get('userId', '') == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'description', 'updatedAt']))
+      );
+      
+      allow delete: if isSignedIn() && (isAdmin() || isTecnico());
+    }
+  }
+}

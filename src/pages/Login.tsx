@@ -14,6 +14,8 @@ function friendlyError(err: any): string {
   if (code.includes('too-many-requests')) return 'Troppi tentativi. Riprova tra qualche minuto.';
   if (code.includes('popup-closed')) return 'Accesso con Google annullato.';
   if (code.includes('network')) return 'Connessione assente. Verifica la rete e riprova.';
+  if (code.includes('unauthorized-domain')) return `Questo dominio (${window.location.hostname}) non è autorizzato in Firebase. Un amministratore deve aggiungerlo in Firebase Console → Authentication → Settings → Authorized domains.`;
+  if (code.includes('operation-not-allowed')) return 'Questo metodo di accesso non è abilitato in Firebase.';
   return msg || "Errore durante l'autenticazione.";
 }
 

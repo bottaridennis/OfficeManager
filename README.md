@@ -36,3 +36,11 @@ La configurazione Firebase **non è nel repository**: viene letta dalle variabil
 - **In locale:** crea `.env.local` copiando `.env.example` e compilando i valori.
 - **Su GitHub:** basta un solo *Actions secret* chiamato `FIREBASE_APPLET_CONFIG`, con dentro il contenuto di `firebase-applet-config.json` incollato così com'è (Settings → Secrets and variables → Actions → New repository secret). In alternativa: `./scripts/set-github-secrets.sh percorso/firebase-applet-config.json` (richiede `gh auth login`).
 - Il workflow `.github/workflows/build.yml` legge quel secret, genera le variabili `VITE_FIREBASE_*` e compila l'app.
+
+## Deploy su GitHub Pages
+
+Ogni push su `main` compila l'app e la pubblica su **https://bottaridennis.github.io/OfficeManager/** (workflow `.github/workflows/build.yml`).
+
+- Impostazione richiesta una volta: Settings → Pages → *Source*: **GitHub Actions**.
+- In Firebase Console → Authentication → Settings → *Authorized domains* aggiungi `bottaridennis.github.io`, altrimenti il login (soprattutto Google) viene rifiutato.
+- GitHub Pages è hosting statico: le notifiche email di `server.ts` non sono disponibili.

@@ -94,7 +94,7 @@ export default function DeviceDetails() {
     }
   };
 
-  const deviceUrl = id ? `${window.location.origin}/devices/${id}` : '';
+  const deviceUrl = id ? `${window.location.origin}${import.meta.env.BASE_URL}devices/${id}` : '';
 
   const handleCopyLink = () => {
     if (!deviceUrl) return;

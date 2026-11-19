@@ -62,8 +62,12 @@ export default function NotificationSystem() {
   }, [currentUser, isAdminOrTech]);
 
   const sendEmailNotification = async (ticket: Ticket) => {
+    // Le email richiedono il backend (server.ts): su hosting statico (GitHub Pages)
+    // VITE_NOTIFY_API_URL è vuota e l'invio viene saltato.
+    const notifyUrl = import.meta.env.VITE_NOTIFY_API_URL ?? '/api/notify-email';
+    if (!notifyUrl) return;
     try {
-      await fetch('/api/notify-email', {
+      await fetch(notifyUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

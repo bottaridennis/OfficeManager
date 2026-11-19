@@ -29,7 +29,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationSystem />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <OnboardingProvider>
           <Routes>
             <Route path="/login" element={<Login />} />

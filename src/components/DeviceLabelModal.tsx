@@ -23,7 +23,7 @@ export default function DeviceLabelModal({ devices, isOpen, onClose }: DeviceLab
   if (!isOpen || devices.length === 0) return null;
 
   const getDeviceUrl = (id: string) => {
-    return `${window.location.origin}/devices/${id}`;
+    return `${window.location.origin}${import.meta.env.BASE_URL}devices/${id}`;
   };
 
   const handleCopyLink = (device: Device) => {

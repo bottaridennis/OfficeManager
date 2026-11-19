@@ -16,16 +16,28 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm run build
+      - name: Configura Firebase dal secret FIREBASE_APPLET_CONFIG
         env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
-          VITE_FIREBASE_FIRESTORE_DATABASE_ID: ${{ secrets.VITE_FIREBASE_FIRESTORE_DATABASE_ID }}
+          FIREBASE_APPLET_CONFIG: ${{ secrets.FIREBASE_APPLET_CONFIG }}
+        run: |
+          if [ -z "$FIREBASE_APPLET_CONFIG" ]; then
+            echo "::error::Secret FIREBASE_APPLET_CONFIG mancante: incolla il contenuto di firebase-applet-config.json in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_APPLET_CONFIG" > firebase-applet-config.json
+          jq -e . firebase-applet-config.json > /dev/null || { echo "::error::FIREBASE_APPLET_CONFIG non è un JSON valido."; exit 1; }
+          jq -r '
+            "VITE_FIREBASE_API_KEY=\(.apiKey // "")",
+            "VITE_FIREBASE_AUTH_DOMAIN=\(.authDomain // "")",
+            "VITE_FIREBASE_PROJECT_ID=\(.projectId // "")",
+            "VITE_FIREBASE_STORAGE_BUCKET=\(.storageBucket // "")",
+            "VITE_FIREBASE_MESSAGING_SENDER_ID=\(.messagingSenderId // "")",
+            "VITE_FIREBASE_APP_ID=\(.appId // "")",
+            "VITE_FIREBASE_MEASUREMENT_ID=\(.measurementId // "")",
+            "VITE_FIREBASE_FIRESTORE_DATABASE_ID=\(.firestoreDatabaseId // "")"
+          ' firebase-applet-config.json > .env.local
+          rm firebase-applet-config.json
+      - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
           name: dist

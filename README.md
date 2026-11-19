@@ -34,5 +34,5 @@ Per una nuova pagina: `PageHeader` (titolo, descrizione, azioni) + `PageBody` co
 La configurazione Firebase **non è nel repository**: viene letta dalle variabili `VITE_FIREBASE_*` (vedi `.env.example`).
 
 - **In locale:** crea `.env.local` copiando `.env.example` e compilando i valori.
-- **Su GitHub:** i valori sono salvati come *Actions secrets*. Per caricarli da un `firebase-applet-config.json` locale: `./scripts/set-github-secrets.sh percorso/firebase-applet-config.json` (richiede `gh auth login`).
-- Il workflow `.github/workflows/build.yml` compila l'app usando questi secrets.
+- **Su GitHub:** basta un solo *Actions secret* chiamato `FIREBASE_APPLET_CONFIG`, con dentro il contenuto di `firebase-applet-config.json` incollato così com'è (Settings → Secrets and variables → Actions → New repository secret). In alternativa: `./scripts/set-github-secrets.sh percorso/firebase-applet-config.json` (richiede `gh auth login`).
+- Il workflow `.github/workflows/build.yml` legge quel secret, genera le variabili `VITE_FIREBASE_*` e compila l'app.
